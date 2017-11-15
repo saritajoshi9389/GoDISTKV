@@ -30,13 +30,24 @@ type MyDatas struct {
 	dataList MyData
 }
 
+type ErrorResponse struct {
+	RCode    int
+	RMessage string
+}
+
+type SetResponse struct {
+	KeysAdded  int
+	KeysFailed []string
+}
+
 var url string
 
-//func handler(w http.ResponseWriter, r *http.Request) {
 func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_list []string) {
+	fmt.Println("enter handler.............")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "X-Requested-With")
-	if (r.URL.Path == "/SET") {
+	fmt.Println(r.URL.Path, "hi path")
+	if (r.URL.Path == "/set") {
 		client := &http.Client{}
 		contents, _ := ioutil.ReadAll(r.Body)
 		var d []MyData
@@ -52,7 +63,7 @@ func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_l
 			//fmt.Println(elem.Key,elem.Value.Data,server_list[server_ele])
 			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
 			val := elem.Key.Data[0]
-			fmt.Println("ahhhh", sEnc)
+			fmt.Println("ahhhh", sEnc, val)
 			temp_struct := MyData{
 				Key: Key{
 					Encoding:  elem.Key.Encoding,
@@ -63,7 +74,7 @@ func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_l
 					Data: elem.Value.Data,
 				},
 			}
-			index := int(val % 3)
+			index := int(int(val) % total_servers) // changing from 3 to total_servers
 			struct_map[index] = append(struct_map[index], temp_struct)
 			server_ele ++
 		}
@@ -79,6 +90,7 @@ func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_l
 					os.Exit(2)
 				} else {
 					defer response.Body.Close()
+					response.Header.Set("Content-Type", "application/json")
 					_, err = client.Do(response)
 					cts, err := ioutil.ReadAll(response.Body)
 					if err != nil {
@@ -93,7 +105,7 @@ func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_l
 
 		}
 
-	} else if (r.URL.Path == "/FETCH") {
+	} else if (r.URL.Path == "/fetch") {
 		//else if r.Method == "PUT"{
 		contents, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -112,7 +124,7 @@ func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_l
 
 		fmt.Println(d[1].Key, d[1].Value)
 
-	} else if (r.URL.Path == "/QUERY") {
+	} else if (r.URL.Path == "/query") {
 		//else if r.Method == "PUT"{
 		contents, err := ioutil.ReadAll(r.Body)
 		if err != nil {

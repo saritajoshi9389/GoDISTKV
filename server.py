@@ -11,63 +11,57 @@ import json
 
 
 class CustomHandler(http.server.BaseHTTPRequestHandler):
+
     def do_PUT(self):
         """Respond to a PUT request for storing a key"""
         print("Received PUT request")
+        return_code = 200
+        return_message = None
         try:
             url = urllib.parse.urlparse(self.path)
-            print("url is ", url)
             content_length = int(self.headers.get("Content-length"))
-            print("content-length", content_length)
+            content_type = self.headers.get("Content-type")
             data = self.rfile.read(content_length)
-            print(data, "data var")
             message = simplejson.loads(data)
-            print("message value ", message)
-            if (content_length != 0):
-                successfully_updated = 1
-            print("Data Dir", self.server)
-            print("Data Dir", self.server.data_dir)
-            print("kv ", self.server.kveachinstance)
-            code = 200
-            failed_inputs = []
-            count = 0
-            ########List to appending dict###########
-            try:
-                for kv in message:
-                    print(kv["key"], kv["value"], self, self.server, self.server.kveachinstance)
-                    print("haha1.....", frozenset(kv["key"].items()))
-                    result = self.server.kveachinstance.set_value(frozenset(kv["key"].items()),
-                                                                  frozenset(kv["value"].items()))
-                    print("haha2")
-                    print(result)
-                    if not result:
-                        print("haha3")
-                        failed_inputs.append(kv["key"])
-                    else:
-                        count += 1
-                    print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
-            except TypeError:
-                return {"error": True, "message": "Bad request"}, 400
-            except KeyError:
-                return {"error": True, "message": "Bad request"}, 400
-            if count < len(message):
-                code = 206
-            return {"Number of keys added": count, "Number of keys failed": failed_inputs}, code
-
-        #################################################
-        # respond to client
-        # if successfully_updated == 1:
-        #     self.send_response(201)
-        #     self.send_header("Content-type", "application/json")
-        #     self.end_headers()
-        # else:
-        #     self.send_response(500, "Only {} nodes updated".format(successfully_updated))
-        #     self.end_headers()
-
+            if content_type != 'application/json':
+                self.send_response(400)
+                self.end_headers()
+                return
+            if self.path == "/set":
+                return_message, return_code = self.process_valid_put_request(message)
+            print(return_message, return_code, "debug", simplejson.dumps(return_message).encode())
+            self._set_headers(return_code)
+            self.wfile.write(simplejson.dumps(return_message).encode())
         except Exception as err:
             print(err)
             self.send_response(500)
             self.end_headers()
+
+    def process_valid_put_request(self, message):
+        code = 200
+        failed_inputs = []
+        count = 0
+        try:
+            for kv in message:
+                print(kv["key"], kv["value"], self, self.server, self.server.kveachinstance)
+                print("haha1.....", frozenset(kv["key"].items()))
+                result = self.server.kveachinstance.set_value(frozenset(kv["key"].items()),
+                                                              frozenset(kv["value"].items()))
+                print("haha2")
+                print(result)
+                if not result:
+                    print("haha3")
+                    failed_inputs.append(kv["key"])
+                else:
+                    count += 1
+                print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
+        except TypeError:
+            return {"error": True, "message": "Bad request"}, 400
+        except KeyError:
+            return {"error": True, "message": "Bad request"}, 400
+        if count < len(message):
+            code = 206
+        return {"Number of keys added": count, "Number of keys failed": failed_inputs}, code
 
     __key_pattern = re.compile("^[a-zA-Z0-9]+$")
 
@@ -77,6 +71,11 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         """Respond to a POST request for storing a key"""
         print("Received POST request")
+
+    def _set_headers(self, code=200):
+        self.send_response(code)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
 
 
 class CustomHttpServer(http.server.HTTPServer):
