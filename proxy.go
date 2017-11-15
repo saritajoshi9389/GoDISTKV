@@ -146,6 +146,25 @@ func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_l
 	}
 }
 
+
+func success_handler(w http.ResponseWriter, reply []byte, code int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(reply)
+}
+
+func error_handler(w http.ResponseWriter, e *ErrorResponse) {
+	resp, error := json.Marshal(e)
+	if error != nil {
+		http.Error(w, error.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(e.RCode)
+	w.Write(resp)
+}
+
+
 func main() {
 	arg := os.Args[1:]
 	server_list := arg[1:]

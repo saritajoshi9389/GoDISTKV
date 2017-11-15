@@ -1,0 +1,14 @@
+[
+    {
+        "ip": "localhost",
+        "port": 9000
+    },
+    {
+        "ip": "localhost",
+        "port": 9001
+    },
+  {
+        "ip": "localhost",
+        "port": 9002
+    }
+]

@@ -80,12 +80,10 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
 
 class CustomHttpServer(http.server.HTTPServer):
     def __init__(self, server_address, RequestHandlerClass, data_dir="data", data_map=''):
-        print("Enters this server func 1")
         super(CustomHttpServer, self).__init__(server_address, RequestHandlerClass)
         self.data_dir = data_dir
         if not os.path.exists(self.data_dir): os.mkdir(self.data_dir)
         self.kveachinstance = data_map
-        print("exit this server func 1")
 
 
 class DataInstance:
@@ -98,12 +96,7 @@ class DataInstance:
         return None
 
     def set_value(self, key, value):
-        print("enters set")
-        print(key)
-        print(value)
-        print(self)
         self.data[key] = value
-        print(self.data.items())
         return True
 
     def search(self, key):
