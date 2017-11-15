@@ -48,6 +48,56 @@ func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_l
 	w.Header().Set("Access-Control-Allow-Headers", "X-Requested-With")
 	fmt.Println(r.URL.Path, "hi path")
 	if (r.URL.Path == "/set") {
+		set_handler(w, r, total_servers, server_list)
+
+	} else if (r.URL.Path == "/fetch") {
+		fetch_handler(w, r, total_servers, server_list)
+
+	} else if (r.URL.Path == "/query") {
+		query_handler(w, r, total_servers, server_list)
+
+	}
+}
+func query_handler(w http.ResponseWriter, r *http.Request, total_servers int, server_list []string) {
+			//else if r.Method == "PUT"{
+		contents, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			fmt.Printf("%s", err)
+			os.Exit(1)
+		}
+		//fmt.Fprintf(w, string(contents))
+		//log.Println(url)
+		fmt.Println("abc", contents)
+		var d []MyData
+		err1 := json.Unmarshal(contents, &d)
+		if err1 != nil {
+			fmt.Printf("hiiii%s", err1)
+			os.Exit(1)
+		}
+
+		fmt.Println(d[1].Key, d[1].Value)
+}
+func fetch_handler(w http.ResponseWriter, r *http.Request, total_servers int, server_list []string) {
+	//else if r.Method == "PUT"{
+		contents, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			fmt.Printf("%s", err)
+			os.Exit(1)
+		}
+		//fmt.Fprintf(w, string(contents))
+		//log.Println(url)
+		fmt.Println("abc", contents)
+		var d []MyData
+		err1 := json.Unmarshal(contents, &d)
+		if err1 != nil {
+			fmt.Printf("hiiii%s", err1)
+			os.Exit(1)
+		}
+
+		fmt.Println(d[1].Key, d[1].Value)
+}
+func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, server_list []string) {
+		if (r.URL.Path == "/set") {
 		client := &http.Client{}
 		contents, _ := ioutil.ReadAll(r.Body)
 		var d []MyData
@@ -105,47 +155,8 @@ func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_l
 
 		}
 
-	} else if (r.URL.Path == "/fetch") {
-		//else if r.Method == "PUT"{
-		contents, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			fmt.Printf("%s", err)
-			os.Exit(1)
-		}
-		//fmt.Fprintf(w, string(contents))
-		//log.Println(url)
-		fmt.Println("abc", contents)
-		var d []MyData
-		err1 := json.Unmarshal(contents, &d)
-		if err1 != nil {
-			fmt.Printf("hiiii%s", err1)
-			os.Exit(1)
-		}
-
-		fmt.Println(d[1].Key, d[1].Value)
-
-	} else if (r.URL.Path == "/query") {
-		//else if r.Method == "PUT"{
-		contents, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			fmt.Printf("%s", err)
-			os.Exit(1)
-		}
-		//fmt.Fprintf(w, string(contents))
-		//log.Println(url)
-		fmt.Println("abc", contents)
-		var d []MyData
-		err1 := json.Unmarshal(contents, &d)
-		if err1 != nil {
-			fmt.Printf("hiiii%s", err1)
-			os.Exit(1)
-		}
-
-		fmt.Println(d[1].Key, d[1].Value)
-
 	}
 }
-
 
 func success_handler(w http.ResponseWriter, reply []byte, code int) {
 	w.Header().Set("Content-Type", "application/json")
@@ -168,14 +179,12 @@ func error_handler(w http.ResponseWriter, e *ErrorResponse) {
 func main() {
 	arg := os.Args[1:]
 	server_list := arg[1:]
-
 	total_servers := len(server_list)
 	fmt.Println("oyeeeeeeeeeeeeeeeeeeeeee", total_servers, server_list)
 	if arg[0] != "-p" {
 		fmt.Println("Incorrect flag variable, exiting....")
 		return
 	}
-	//http.HandleFunc("/", handler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, total_servers, server_list)
 	})
