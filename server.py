@@ -88,8 +88,13 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             #     self.send_response(400)
             #     self.end_headers()
             #     return
-            if self.path == "/fetch":
+            if self.path == "/query":
+                return_message, return_code = self.query_results(message)
+            elif self.path == "/fetch":
                 return_message, return_code = self.fetch_results(message)
+            else:
+                return_code = 501
+                return_message = {"errors": [{"error":"invalid_api_key"}]}
             # print(return_message, return_code, "debug", simplejson.dumps(return_message).encode())
             self._set_headers(return_code)
             self.wfile.write(simplejson.dumps(return_message).encode())
@@ -97,13 +102,14 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             print(err)
             self.send_response(500)
             self.end_headers()
+
     def fetch_results(self, message):
         code = 200
         try:
             for k in message:
                 print(frozenset(k["key"].items()), "frozen")
                 print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
-                if self.server.kveachinstance.get_value(frozenset(k["key"].items())) == None:
+                if self.server.kveachinstance.get_value(frozenset(k["key"].items())) is None:
                     result = [{
                         "key": k["key"],
                         "value":None
@@ -122,6 +128,30 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             return {"error": True, "message": "Bad request"}, 400
         return result, code
 
+    def query_results(self, message):
+        code = 200
+        try:
+            for k in message:
+                print(frozenset(k["key"].items()), "frozen")
+                print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
+                if self.server.kveachinstance.get_value(frozenset(k["key"].items())) == None:
+                    result = [{
+                        "key": k["key"],
+                        "value": False
+                    }]
+                else:
+                    result = [
+                        {
+                            "key": k["key"],
+                            "value": True
+                        }
+                    ]
+                # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
+        except TypeError:
+            return {"error": True, "message": "Bad request"}, 400
+        except KeyError:
+            return {"error": True, "message": "Bad request"}, 400
+        return result, code
 
     def _set_headers(self, code=200):
         self.send_response(code)
