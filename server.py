@@ -45,6 +45,10 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             for kv in message:
                 # print(kv["key"], kv["value"], self, self.server, self.server.kveachinstance)
                 # print("haha1.....", frozenset(kv["key"].items()))
+                temp_store = self.server.kveachinstance.get_value((frozenset(kv["key"].items())))
+                flag = True
+                if (temp_store):
+                    flag = False
                 result = self.server.kveachinstance.set_value(frozenset(kv["key"].items()),
                                                               frozenset(kv["value"].items()))
                 # print("haha2")
@@ -53,7 +57,8 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                     # print("haha3")
                     failed_inputs.append(kv["key"])
                 else:
-                    count += 1
+                    if flag:
+                        count += 1
                 # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
@@ -71,6 +76,52 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         """Respond to a POST request for storing a key"""
         print("Received POST request")
+        return_code = 200
+        return_message = None
+        try:
+            url = urllib.parse.urlparse(self.path)
+            content_length = int(self.headers.get("Content-length"))
+            content_type = self.headers.get("Content-type")
+            data = self.rfile.read(content_length)
+            message = simplejson.loads(data)
+            # if content_type != 'application/json':
+            #     self.send_response(400)
+            #     self.end_headers()
+            #     return
+            if self.path == "/fetch":
+                return_message, return_code = self.fetch_results(message)
+            # print(return_message, return_code, "debug", simplejson.dumps(return_message).encode())
+            self._set_headers(return_code)
+            self.wfile.write(simplejson.dumps(return_message).encode())
+        except Exception as err:
+            print(err)
+            self.send_response(500)
+            self.end_headers()
+    def fetch_results(self, message):
+        code = 200
+        try:
+            for k in message:
+                print(frozenset(k["key"].items()), "frozen")
+                print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
+                if self.server.kveachinstance.get_value(frozenset(k["key"].items())) == None:
+                    result = [{
+                        "key": k["key"],
+                        "value":None
+                    }]
+                else:
+                    result = [
+                        {
+                            "key": k["key"],
+                            "value": dict(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
+                        }
+                    ]
+                # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
+        except TypeError:
+            return {"error": True, "message": "Bad request"}, 400
+        except KeyError:
+            return {"error": True, "message": "Bad request"}, 400
+        return result, code
+
 
     def _set_headers(self, code=200):
         self.send_response(code)
