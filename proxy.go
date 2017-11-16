@@ -9,6 +9,7 @@ import (
 	"strings"
 	"encoding/json"
 	"bytes"
+	"time"
 )
 import (
 	b64 "encoding/base64"
@@ -150,8 +151,8 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 				if err != nil {
 					os.Exit(2)
 				} else {
-					defer response.Body.Close()
 					go func(response *http.Request) {
+						defer response.Body.Close()
 						defer wg.Done()
 						response.Header.Set("Content-Type", "application/json")
 						client := &http.Client{}
@@ -161,6 +162,7 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 						} else {
 							respsChan <- resp_received
 						}
+						time.Sleep(time.Second * 2)
 					}(response)
 				}
 
@@ -175,6 +177,7 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 			}
 		}()
 		wg.Wait()
+		fmt.Println("before enterning", len(resps))
 		send_message, r_code := format_response(resps)
 		fmt.Println("hi result", string(send_message))
 		success_handler(w, send_message, r_code)
@@ -182,10 +185,12 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 	}
 }
 func format_response(responses []*http.Response) ([]byte, int) {
+	fmt.Println("lenth of response", len(responses))
 	failed_map := make([]string, 0)
 	count_of_keys := 0
 	code := SUCCESS
 	for _, response := range responses {
+		fmt.Println("this is a check", response)
 		if response.StatusCode >= SUCCESS {
 			body, error := ioutil.ReadAll(response.Body)
 			fmt.Println("body", string(body))
