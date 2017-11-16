@@ -14,7 +14,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
 
     def do_PUT(self):
         """Respond to a PUT request for storing a key"""
-        print("Received PUT request")
+        # print("Received PUT request")
         return_code = 200
         return_message = None
         try:
@@ -43,18 +43,18 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         count = 0
         try:
             for kv in message:
-                print(kv["key"], kv["value"], self, self.server, self.server.kveachinstance)
-                print("haha1.....", frozenset(kv["key"].items()))
+                # print(kv["key"], kv["value"], self, self.server, self.server.kveachinstance)
+                # print("haha1.....", frozenset(kv["key"].items()))
                 result = self.server.kveachinstance.set_value(frozenset(kv["key"].items()),
                                                               frozenset(kv["value"].items()))
-                print("haha2")
-                print(result)
+                # print("haha2")
+                # print(result)
                 if not result:
-                    print("haha3")
+                    # print("haha3")
                     failed_inputs.append(kv["key"])
                 else:
                     count += 1
-                print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
+                # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
