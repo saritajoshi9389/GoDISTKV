@@ -44,7 +44,6 @@ type SetResponse struct {
 }
 
 var url string
-
 const SUCCESS int = 200
 const PARTIAL_SUCCESS int = 206
 const INTERNAL_SERVER_ERROR int = 500
@@ -104,9 +103,6 @@ func fetch_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 	fmt.Println(d[1].Key, d[1].Value)
 }
 func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, server_list []string) {
-	//failed_map := make([]string, 0)
-	//count_of_keys := 0
-	//code := SUCCESS
 	/////////////////////////
 	if (r.URL.Path == "/set") {
 		contents, _ := ioutil.ReadAll(r.Body)
@@ -178,10 +174,41 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 			}
 		}()
 		wg.Wait()
-
-		//success_handler(w, output, code)
+		send_message, r_code := format_response(resps)
+		fmt.Println("hi result", string(send_message))
+		success_handler(w, send_message, r_code)
 
 	}
+}
+func format_response(responses []*http.Response) ([]byte, int) {
+	failed_map := make([]string, 0)
+	count_of_keys := 0
+	code := SUCCESS
+	for _, response := range responses {
+		if response.StatusCode >= SUCCESS {
+			body, error := ioutil.ReadAll(response.Body)
+			if error != nil {
+				log.Fatal(error)
+			}
+			var back_response SetResponse
+			json.Unmarshal(body, &back_response)
+			count_of_keys += back_response.CountOfAddedKeys
+			failed_map = append(failed_map, back_response.FailedKeys...)
+		} else {
+			code = PARTIAL_SUCCESS
+		}
+		response.Body.Close()
+	}
+	res := SetResponse{CountOfAddedKeys: count_of_keys, FailedKeys: failed_map}
+	if len(failed_map) > 0 {
+		code = PARTIAL_SUCCESS
+	}
+	body, err := json.Marshal(res)
+	if err != nil {
+		return nil, INTERNAL_SERVER_ERROR
+	}
+	return body, code
+
 }
 
 func success_handler(w http.ResponseWriter, reply []byte, code int) {
