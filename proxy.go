@@ -138,7 +138,7 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 		fmt.Println("No of requests ", server_ele)
 		i := 0
 		var wg sync.WaitGroup
-		wg.Add(server_ele)
+		wg.Add(len(struct_map))
 		respsChan := make(chan *http.Response)
 		resps := make([]*http.Response, 0)
 		for i < total_servers {
