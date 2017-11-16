@@ -29,7 +29,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 return
             if self.path == "/set":
                 return_message, return_code = self.process_valid_put_request(message)
-            print(return_message, return_code, "debug", simplejson.dumps(return_message).encode())
+            # print(return_message, return_code, "debug", simplejson.dumps(return_message).encode())
             self._set_headers(return_code)
             self.wfile.write(simplejson.dumps(return_message).encode())
         except Exception as err:
@@ -61,7 +61,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             return {"error": True, "message": "Bad request"}, 400
         if count < len(message):
             code = 206
-        return {"Number of keys added": count, "Number of keys failed": failed_inputs}, code
+        return {"FailedKeys": failed_inputs, "CountOfAddedKeys": count}, code
 
     __key_pattern = re.compile("^[a-zA-Z0-9]+$")
 

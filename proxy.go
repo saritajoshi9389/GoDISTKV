@@ -39,8 +39,8 @@ type ErrorResponse struct {
 }
 
 type SetResponse struct {
-	CountOfAddedKeys int
 	FailedKeys       []string
+	CountOfAddedKeys int
 }
 
 var url string
@@ -170,6 +170,7 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 		}
 		go func() {
 			for response := range respsChan {
+				fmt.Println("new resp", response)
 				resps = append(resps, response)
 			}
 		}()
@@ -187,6 +188,7 @@ func format_response(responses []*http.Response) ([]byte, int) {
 	for _, response := range responses {
 		if response.StatusCode >= SUCCESS {
 			body, error := ioutil.ReadAll(response.Body)
+			fmt.Println("body", string(body))
 			if error != nil {
 				log.Fatal(error)
 			}
