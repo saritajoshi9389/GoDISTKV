@@ -60,6 +60,17 @@ type QueryResponse struct {
 	} `json:"key"`
 }
 
+type FetchResponse struct {
+	Value struct {
+		Data     string `json:"data"`
+		Encoding string `json:"encoding"`
+	} `json:"value"`
+	Key struct {
+		Data     string `json:"data"`
+		Encoding string `json:"encoding"`
+	} `json:"key"`
+}
+
 var url string
 const SUCCESS int = 200
 const PARTIAL_SUCCESS int = 206
@@ -191,23 +202,111 @@ func format_query_response(responses []*http.Response) ([]byte, int) {
 
 
 func fetch_handler(w http.ResponseWriter, r *http.Request, total_servers int, server_list []string) {
-	contents, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Printf("%s", err)
-		os.Exit(1)
-	}
-	//fmt.Fprintf(w, string(contents))
-	//log.Println(url)
-	fmt.Println("abc", contents)
-	var d []MyData
-	err1 := json.Unmarshal(contents, &d)
-	if err1 != nil {
-		fmt.Printf("hiiii%s", err1)
-		os.Exit(1)
-	}
+	if (r.URL.Path == "/fetch") {
+		contents, _ := ioutil.ReadAll(r.Body)
+		fmt.Println("print contents", string(contents))
+		var d []MakeQueryRequest
+		err1 := json.Unmarshal(contents, &d)
+		if err1 != nil {
+			fmt.Printf("hiiii%s", err1)
+			os.Exit(1)
+		}
+		fmt.Println("len", reflect.TypeOf(d), len(d) ,d[0])
+		server_ele := 0
+		struct_map := make(map[int][]MakeQueryRequest)
+		for _, elem := range d {
+			fmt.Println(server_list[server_ele], elem.Key.Data)
+			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
+			val := elem.Key.Data[0]
+			fmt.Println("ahhhh", sEnc, val)
+			temp_struct := MakeQueryRequest{
+				Key: Key{
+					Encoding:  elem.Key.Encoding,
+					Data: elem.Key.Data,
+				},
+			}
+			index := int(int(val) % total_servers) // changing from 3 to total_servers
+			struct_map[index] = append(struct_map[index], temp_struct)
+			server_ele ++
+		}
+		fmt.Println("No of requests ", server_ele)
+		i := 0
+		var wg sync.WaitGroup
+		wg.Add(len(struct_map))
+		respsChan := make(chan *http.Response)
+		resps := make([]*http.Response, 0)
+		for i < total_servers {
+			if val, ok := struct_map[i]; ok {
+				json_obj, _ := json.Marshal(val)
+				fmt.Println(string(json_obj))
+				fmt.Println("temp_struct", val, i)
+				url = strings.Join([]string{"http://", "localhost:", string(server_list[i]), r.URL.Path}, "")
+				response, err := http.NewRequest("POST", url, bytes.NewBuffer(json_obj))
+				if err != nil {
+					os.Exit(2)
+				} else {
+					go func(response *http.Request) {
+						defer response.Body.Close()
+						defer wg.Done()
+						response.Header.Set("Content-Type", "application/json")
+						client := &http.Client{}
+						resp_received, err := client.Do(response)
+						if err != nil {
+							panic(err)
+						} else {
+							respsChan <- resp_received
+						}
+						time.Sleep(time.Second * 2)
+					}(response)
+				}
 
-	fmt.Println(d[1].Key, d[1].Value)
+			}
+			i++
+
+		}
+		go func() {
+			for response := range respsChan {
+				fmt.Println("new resp", response)
+				resps = append(resps, response)
+			}
+		}()
+		wg.Wait()
+		fmt.Println("before enterning", len(resps))
+		send_message, r_code := format_fetch_response(resps)
+		fmt.Println("hi result", string(send_message))
+		success_handler(w, send_message, r_code)
+
+	}
 }
+
+func format_fetch_response(responses []*http.Response) ([]byte, int) {
+	fmt.Println("lenth of response", len(responses))
+	output := make([]FetchResponse, 0)
+	code := SUCCESS
+	for _, response := range responses {
+		fmt.Println("this is a check", response)
+		if response.StatusCode >= SUCCESS {
+			body, error := ioutil.ReadAll(response.Body)
+			fmt.Println("body", string(body))
+			if error != nil {
+				log.Fatal(error)
+			}
+			var back_response []FetchResponse
+			json.Unmarshal(body, &back_response)
+			output = append(output, back_response...)
+		} else {
+			code = PARTIAL_SUCCESS
+		}
+		response.Body.Close()
+	}
+	body, err := json.Marshal(output)
+	if err != nil {
+		return nil, INTERNAL_SERVER_ERROR
+	}
+	return body, code
+
+}
+
 func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, server_list []string) {
 	/////////////////////////
 	if (r.URL.Path == "/set") {
