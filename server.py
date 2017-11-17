@@ -112,7 +112,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 if self.server.kveachinstance.get_value(frozenset(k["key"].items())) is None:
                     result = [{
                         "key": k["key"],
-                        "value":None
+                        "value": {}
                     }]
                 else:
                     result = [
