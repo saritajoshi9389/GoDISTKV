@@ -109,7 +109,7 @@ func query_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 		server_ele := 0
 		struct_map := make(map[int][]MakeQueryRequest)
 		for _, elem := range d {
-			fmt.Println(server_list[server_ele], elem.Data
+			fmt.Println(server_list[server_ele], elem.Data)
 			// sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
 			// val := hash_function(elem.Key.Data)
 			// val := elem.Key.Data[0]
