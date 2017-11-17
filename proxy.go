@@ -86,18 +86,68 @@ func handler(w http.ResponseWriter, r *http.Request, total_servers int, server_l
 	fmt.Println("enter handler.............")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "X-Requested-With")
-	fmt.Println(r.URL.Path, "hi path")
+	fmt.Println(r.URL.Path, "hi path", r.Method)
+
 	if (r.URL.Path == "/set") {
 		set_handler(w, r, total_servers, server_list)
 
-	} else if (r.URL.Path == "/fetch") {
+	} else if (r.URL.Path == "/fetch" && r.Method == "POST") {
 		fetch_handler(w, r, total_servers, server_list)
 
-	} else if (r.URL.Path == "/query") {
+	} else if (r.URL.Path == "/fetch" && r.Method == "GET") {
+		fmt.Println("hi bbay")
+		fetch_handler_all(w, r, total_servers, server_list)
+
+	}else if (r.URL.Path == "/query") {
 		query_handler(w, r, total_servers, server_list)
 
 	}
 }
+
+func fetch_handler_all(w http.ResponseWriter, r *http.Request, total_servers int, server_list []string) {
+	if (r.URL.Path == "/fetch") {
+		var i = 0
+		resps := make([]*http.Response, 0)
+		respsChan := make(chan *http.Response)
+		var wg sync.WaitGroup
+		wg.Add(total_servers)
+		for i < total_servers {
+				url = strings.Join([]string{"http://", "localhost:", string(server_list[i]), r.URL.Path}, "")
+				response, err := http.NewRequest("GET", url, nil)
+				if err != nil {
+					os.Exit(2)
+				} else {
+					go func(response *http.Request) {
+						defer wg.Done()
+						response.Header.Set("Content-Type", "application/json")
+						client := &http.Client{}
+						resp_received, err := client.Do(response)
+						if err != nil {
+							panic(err)
+						} else {
+							respsChan <- resp_received
+						}
+						time.Sleep(time.Second * 2)
+					}(response)
+				}
+			i++
+
+		}
+		go func() {
+			for response := range respsChan {
+				fmt.Println("new resp", response)
+				resps = append(resps, response)
+			}
+		}()
+		wg.Wait()
+		fmt.Println("before enterning", len(resps))
+		send_message, r_code := format_fetch_response(resps)
+		fmt.Println("hi result", string(send_message))
+		success_handler(w, send_message, r_code)
+
+	}
+}
+
 func query_handler(w http.ResponseWriter, r *http.Request, total_servers int, server_list []string) {
 	if (r.URL.Path == "/query") {
 		contents, _ := ioutil.ReadAll(r.Body)

@@ -11,7 +11,6 @@ import json
 
 
 class CustomHandler(http.server.BaseHTTPRequestHandler):
-
     def do_PUT(self):
         """Respond to a PUT request for storing a key"""
         # print("Received PUT request")
@@ -59,14 +58,14 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 else:
                     if flag:
                         count += 1
-                # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
+                        # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
             return {"error": True, "message": "Bad request"}, 400
         if count < len(message):
             code = 206
-        return {"FailedKeys": failed_inputs, "CountOfAddedKeys": count}, code
+        return {"keys_failed": failed_inputs, "keys_added": count}, code
 
     __key_pattern = re.compile("^[a-zA-Z0-9]+$")
 
@@ -94,7 +93,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 return_message, return_code = self.fetch_results(message)
             else:
                 return_code = 501
-                return_message = {"errors": [{"error":"invalid_api_key"}]}
+                return_message = {"errors": [{"error": "invalid_api_key"}]}
             # print(return_message, return_code, "debug", simplejson.dumps(return_message).encode())
             self._set_headers(return_code)
             self.wfile.write(simplejson.dumps(return_message).encode())
@@ -121,7 +120,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                             "value": dict(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
                         }
                     ]
-                # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
+                    # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
@@ -146,7 +145,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                             "value": True
                         }
                     ]
-                # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
+                    # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
@@ -157,6 +156,20 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
+
+    def do_GET(self):
+        code = 404
+        message = None
+        if self.path == '/fetch':
+            message, code = self.fetch_all()
+        # send response
+        self._set_headers(code)
+        self.wfile.write(simplejson.dumps(message).encode())
+
+    def fetch_all(self):
+        code = 200
+        output = self.server.kveachinstance.get_all()
+        return output, code
 
 
 class CustomHttpServer(http.server.HTTPServer):
@@ -175,6 +188,15 @@ class DataInstance:
         if key in self.data:
             return self.data[key]
         return None
+
+    def get_all(self):
+        var = [
+            {
+                "key": dict(key),
+                "value": dict(self.data[key])
+            } for key in self.data
+            ]
+        return var
 
     def set_value(self, key, value):
         self.data[key] = value
