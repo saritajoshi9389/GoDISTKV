@@ -134,7 +134,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             for k in message:
                 print(frozenset(k["key"].items()), "frozen")
                 print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
-                if self.server.kveachinstance.get_value(frozenset(k["key"].items())) == None:
+                if self.server.kveachinstance.get_value(frozenset(k["key"].items())) is None:
                     result = [{
                         "key": k["key"],
                         "value": False
