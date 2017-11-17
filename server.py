@@ -106,18 +106,18 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         code = 200
         try:
             for k in message:
-                print(frozenset(k["key"].items()), "frozen")
-                print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
-                if self.server.kveachinstance.get_value(frozenset(k["key"].items())) is None:
+                # print(frozenset(k["key"].items()), "frozen")
+                # print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
+                if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
                     result = [{
-                        "key": k["key"],
+                        "key": k,
                         "value": {}
                     }]
                 else:
                     result = [
                         {
-                            "key": k["key"],
-                            "value": dict(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
+                            "key": k,
+                            "value": dict(self.server.kveachinstance.get_value(frozenset(k.items())))
                         }
                     ]
                     # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
@@ -131,17 +131,17 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         code = 200
         try:
             for k in message:
-                print(frozenset(k["key"].items()), "frozen")
-                print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
-                if self.server.kveachinstance.get_value(frozenset(k["key"].items())) is None:
+                # print(frozenset(k["key"].items()), "frozen")
+                # print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
+                if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
                     result = [{
-                        "key": k["key"],
+                        "key": k,
                         "value": False
                     }]
                 else:
                     result = [
                         {
-                            "key": k["key"],
+                            "key": k,
                             "value": True
                         }
                     ]
