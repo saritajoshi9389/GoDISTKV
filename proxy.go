@@ -106,16 +106,16 @@ func query_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 		for _, elem := range d {
 			fmt.Println(server_list[server_ele], elem.Key.Data)
 			// sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
-			val := hash_function(elem.Key.Data)
+			// val := hash_function(elem.Key.Data)
 			// val := elem.Key.Data[0]
-			fmt.Println("ahhhh", val)
 			temp_struct := MakeQueryRequest{
 				Key: Key{
 					Encoding:  elem.Key.Encoding,
 					Data: elem.Key.Data,
 				},
 			}
-			index := int(int(val) % total_servers) // changing from 3 to total_servers
+			index := hash_function(elem.Key.Data) % total_servers // changing from 3 to total_servers
+			fmt.Println("ahhhh", index)
 			struct_map[index] = append(struct_map[index], temp_struct)
 			server_ele ++
 		}
@@ -215,15 +215,15 @@ func fetch_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 		for _, elem := range d {
 			fmt.Println(server_list[server_ele], elem.Key.Data)
 			
-			val := hash_function(elem.Key.Data)
-			fmt.Println("ehhhh", val)
+			// val := hash_function(elem.Key.Data)
 			temp_struct := MakeQueryRequest{
 				Key: Key{
 					Encoding:  elem.Key.Encoding,
 					Data: elem.Key.Data,
 				},
 			}
-			index := int(int(val) % total_servers) // changing from 3 to total_servers
+			index := hash_function(elem.Key.Data) % total_servers // changing from 3 to total_servers
+			fmt.Println("ehhhh", index)
 			struct_map[index] = append(struct_map[index], temp_struct)
 			server_ele ++
 		}
@@ -321,8 +321,7 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 		struct_map := make(map[int][]MyData)
 		for _, elem := range d {
 			//fmt.Println(elem.Key,elem.Value.Data,server_list[server_ele])
-			val := hash_function(elem.Key.Data)
-			fmt.Println("ahhhh",  val)
+			// val := hash_function(elem.Key.Data)
 			temp_struct := MyData{
 				Key: Key{
 					Encoding:  elem.Key.Encoding,
@@ -333,7 +332,9 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 					Data: elem.Value.Data,
 				},
 			}
-			index := int(int(val) % total_servers) // changing from 3 to total_servers
+			index := hash_function(elem.Key.Data) % total_servers // changing from 3 to total_servers
+			fmt.Println("ahhhh",  index)
+
 			struct_map[index] = append(struct_map[index], temp_struct)
 			server_ele ++
 		}
