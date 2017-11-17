@@ -10,9 +10,6 @@ import (
 	"encoding/json"
 	"bytes"
 	"time"
-)
-import (
-	b64 "encoding/base64"
 	"sync"
 	"reflect"
 )
@@ -112,15 +109,16 @@ func query_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 		server_ele := 0
 		struct_map := make(map[int][]MakeQueryRequest)
 		for _, elem := range d {
-			fmt.Println(server_list[server_ele], elem.Data)
-			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Data))
-			val := elem.Data[0]
-			fmt.Println("ahhhh", sEnc, val)
+			fmt.Println(server_list[server_ele], elem.Data
+			// sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
+			// val := hash_function(elem.Key.Data)
+			// val := elem.Key.Data[0]
 			temp_struct := MakeQueryRequest{
 					Encoding:  elem.Encoding,
 					Data: elem.Data,
 			}
-			index := int(int(val) % total_servers) // changing from 3 to total_servers
+			index := hash_function(elem.Data) % total_servers // changing from 3 to total_servers
+			fmt.Println("ahhhh", index)
 			struct_map[index] = append(struct_map[index], temp_struct)
 			server_ele ++
 		}
@@ -219,14 +217,12 @@ func fetch_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 		struct_map := make(map[int][]MakeQueryRequest)
 		for _, elem := range d {
 			fmt.Println(server_list[server_ele], elem.Data)
-			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Data))
-			val := elem.Data[0]
-			fmt.Println("ahhhh", sEnc, val)
 			temp_struct := MakeQueryRequest{
 					Encoding:  elem.Encoding,
 					Data: elem.Data,
 			}
-			index := int(int(val) % total_servers) // changing from 3 to total_servers
+			index := hash_function(elem.Data) % total_servers // changing from 3 to total_servers
+			fmt.Println("ehhhh", index)
 			struct_map[index] = append(struct_map[index], temp_struct)
 			server_ele ++
 		}
@@ -324,9 +320,7 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 		struct_map := make(map[int][]MyData)
 		for _, elem := range d {
 			//fmt.Println(elem.Key,elem.Value.Data,server_list[server_ele])
-			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
-			val := elem.Key.Data[0]
-			fmt.Println("ahhhh", sEnc, val)
+			// val := hash_function(elem.Key.Data)
 			temp_struct := MyData{
 				Key: Key{
 					Encoding:  elem.Key.Encoding,
@@ -337,7 +331,9 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 					Data: elem.Value.Data,
 				},
 			}
-			index := int(int(val) % total_servers) // changing from 3 to total_servers
+			index := hash_function(elem.Key.Data) % total_servers // changing from 3 to total_servers
+			fmt.Println("ahhhh",  index)
+
 			struct_map[index] = append(struct_map[index], temp_struct)
 			server_ele ++
 		}
@@ -441,8 +437,17 @@ func error_handler(w http.ResponseWriter, e *ErrorResponse) {
 	w.WriteHeader(e.RCode)
 	w.Write(resp)
 }
-
+func hash_function(str string) (int){
+	i:= 0
+	sum:=0
+	for i=0;i<len(str);i++{
+		// fmt.Println(i,"->",int(str[i]));
+		sum = sum + int(str[i])
+	}
+	return sum
+}
 func main() {
+	// fmt.Println(hash_function("yoyoyo"))
 	arg := os.Args[1:]
 	server_list := arg[1:]
 	total_servers := len(server_list)
