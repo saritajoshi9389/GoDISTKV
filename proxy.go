@@ -10,9 +10,6 @@ import (
 	"encoding/json"
 	"bytes"
 	"time"
-)
-import (
-	b64 "encoding/base64"
 	"sync"
 	"reflect"
 )
@@ -108,9 +105,10 @@ func query_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 		struct_map := make(map[int][]MakeQueryRequest)
 		for _, elem := range d {
 			fmt.Println(server_list[server_ele], elem.Key.Data)
-			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
-			val := elem.Key.Data[0]
-			fmt.Println("ahhhh", sEnc, val)
+			// sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
+			val := hash_function(elem.Key.Data)
+			// val := elem.Key.Data[0]
+			fmt.Println("ahhhh", val)
 			temp_struct := MakeQueryRequest{
 				Key: Key{
 					Encoding:  elem.Key.Encoding,
@@ -216,9 +214,9 @@ func fetch_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 		struct_map := make(map[int][]MakeQueryRequest)
 		for _, elem := range d {
 			fmt.Println(server_list[server_ele], elem.Key.Data)
-			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
-			val := elem.Key.Data[0]
-			fmt.Println("ahhhh", sEnc, val)
+			
+			val := hash_function(elem.Key.Data)
+			fmt.Println("ehhhh", val)
 			temp_struct := MakeQueryRequest{
 				Key: Key{
 					Encoding:  elem.Key.Encoding,
@@ -323,9 +321,8 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 		struct_map := make(map[int][]MyData)
 		for _, elem := range d {
 			//fmt.Println(elem.Key,elem.Value.Data,server_list[server_ele])
-			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
-			val := elem.Key.Data[0]
-			fmt.Println("ahhhh", sEnc, val)
+			val := hash_function(elem.Key.Data)
+			fmt.Println("ahhhh",  val)
 			temp_struct := MyData{
 				Key: Key{
 					Encoding:  elem.Key.Encoding,
@@ -439,8 +436,17 @@ func error_handler(w http.ResponseWriter, e *ErrorResponse) {
 	w.WriteHeader(e.RCode)
 	w.Write(resp)
 }
-
+func hash_function(str string) (int){
+	i:= 0
+	sum:=0
+	for i=0;i<len(str);i++{
+		// fmt.Println(i,"->",int(str[i]));
+		sum = sum + int(str[i])
+	}
+	return sum
+}
 func main() {
+	// fmt.Println(hash_function("yoyoyo"))
 	arg := os.Args[1:]
 	server_list := arg[1:]
 	total_servers := len(server_list)
