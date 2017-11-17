@@ -41,15 +41,20 @@ type ErrorResponse struct {
 }
 
 type SetResponse struct {
-	FailedKeys       []string
-	CountOfAddedKeys int
+	KeysFailed       []string `json:"keys_failed"`
+	KeysAdded int	`json:"keys_added"`
 }
+//
+//type MakeQueryRequest struct {
+//	Key struct {
+//		Encoding string `json:"encoding"`
+//		Data     string `json:"data"`
+//	} `json:"key"`
+//}
 
 type MakeQueryRequest struct {
-	Key struct {
-		Encoding string `json:"encoding"`
-		Data     string `json:"data"`
-	} `json:"key"`
+	Encoding string `json:"encoding"`
+	Data     string `json:"data"`
 }
 
 type QueryResponse struct {
@@ -107,15 +112,13 @@ func query_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 		server_ele := 0
 		struct_map := make(map[int][]MakeQueryRequest)
 		for _, elem := range d {
-			fmt.Println(server_list[server_ele], elem.Key.Data)
-			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
-			val := elem.Key.Data[0]
+			fmt.Println(server_list[server_ele], elem.Data)
+			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Data))
+			val := elem.Data[0]
 			fmt.Println("ahhhh", sEnc, val)
 			temp_struct := MakeQueryRequest{
-				Key: Key{
-					Encoding:  elem.Key.Encoding,
-					Data: elem.Key.Data,
-				},
+					Encoding:  elem.Encoding,
+					Data: elem.Data,
 			}
 			index := int(int(val) % total_servers) // changing from 3 to total_servers
 			struct_map[index] = append(struct_map[index], temp_struct)
@@ -215,15 +218,13 @@ func fetch_handler(w http.ResponseWriter, r *http.Request, total_servers int, se
 		server_ele := 0
 		struct_map := make(map[int][]MakeQueryRequest)
 		for _, elem := range d {
-			fmt.Println(server_list[server_ele], elem.Key.Data)
-			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
-			val := elem.Key.Data[0]
+			fmt.Println(server_list[server_ele], elem.Data)
+			sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Data))
+			val := elem.Data[0]
 			fmt.Println("ahhhh", sEnc, val)
 			temp_struct := MakeQueryRequest{
-				Key: Key{
-					Encoding:  elem.Key.Encoding,
-					Data: elem.Key.Data,
-				},
+					Encoding:  elem.Encoding,
+					Data: elem.Data,
 			}
 			index := int(int(val) % total_servers) // changing from 3 to total_servers
 			struct_map[index] = append(struct_map[index], temp_struct)
@@ -404,14 +405,15 @@ func format_set_response(responses []*http.Response) ([]byte, int) {
 			}
 			var back_response SetResponse
 			json.Unmarshal(body, &back_response)
-			count_of_keys += back_response.CountOfAddedKeys
-			failed_map = append(failed_map, back_response.FailedKeys...)
+			count_of_keys += back_response.KeysAdded
+			fmt.Println("count of keys", count_of_keys, "back", back_response.KeysAdded)
+			failed_map = append(failed_map, back_response.KeysFailed...)
 		} else {
 			code = PARTIAL_SUCCESS
 		}
 		response.Body.Close()
 	}
-	res := SetResponse{CountOfAddedKeys: count_of_keys, FailedKeys: failed_map}
+	res := SetResponse{KeysAdded: count_of_keys, KeysFailed: failed_map}
 	if len(failed_map) > 0 {
 		code = PARTIAL_SUCCESS
 	}
