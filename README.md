@@ -13,36 +13,45 @@ That is, at any given time, a single node might not have all the data
 
 1) README    
 
-        A README with all the descriptions about the design and implementation of this system along with the steps to execute
+        A README with all the descriptions about the design and implementation of this system along 
+        with the steps to execute
         Makefile (as per the Sample Makefile provided by Professor)
 2) Program files
 
         a) proxy.go  
                 A proxy/coordinator process keeps track of available servers and data stored in those servers. 
-                A client connects to the proxy/coordinator process to learn the address of a server that it should connect for performing any operations.
-                The proxy server also acts as a load-balancer and ensures a uniform workload distribution among various servers.
-                For this phase of the assignment, we have a hash-function that takes the given key (string or binary encoded), calculates the server number by a simple mod operation
+                A client connects to the proxy/coordinator process to learn the address of a server that it should 
+                connect for performing any operations.
+                The proxy server also acts as a load-balancer and ensures a uniform workload distribution 
+                among various servers.
+                For this phase of the assignment, we have a hash-function that takes the given key(string/binary), 
+                calculates the server number by a simple mod operation
                 In future, this can be replaced by consistency hashing technique
                 
                 Command to run: go run proxy.go <ip:port> <ip:port> <ip:port>
-                Here, ip and port (input parameters) belong to the server ip and server port that is already up and running
+                Here, ip and port (input parameters) belong to the server ip and server port that is already up 
+                and running
                 
         b) server.py
                 A server program that accepts get/set requests from the clients and returns a valid response. 
-                (Future work: The server will communicate with it's peer processes (spread across the network) to maintain a consistent view of the key-value database.)
+                (Future work: The server will communicate with it's peer processes (spread across the network) 
+                to maintain a consistent view of the key-value database.)
                 
                 Command to run: python3 server.py -p <port>
                 Here, port (input parameters) belong to the server port
-                We have also provided a -d option that can be used to create a specific directory in which all the data can be stored
-                Such a technique, in future, will be useful to implement persistent storage and will allow roll-back scenario
+                We have also provided a -d option that can be used to create a specific directory in which 
+                all the data can be stored
+                Such a technique, in future, will be useful to implement persistent storage and will allow 
+                roll-back scenario
                 
                 
 3) Bash Scripts
 
-              To allow easy testing and automation, we have few scripts that can start n number of servers i.e.
+              To allow easy testing and automation, we have few scripts that can start n number of servers:
               start_n_servers.sh
               stop_servers.sh
-              client.sh (For this phase of the assignment, client is simple curl commands that can be run via terminal)
+              client.sh (For this phase of the assignment, client is simple curl commands 
+              that can be run via terminal)
               
            
 4) Makefile
@@ -60,7 +69,8 @@ NOTE: Client for this assignment is curl command, sample commands can be found i
 
 # Run and execution steps
 
-As per the problem statement, we support two formats for encoding i.e. "binary" or "string". A key or value therefore looks as below:
+As per the problem statement, we support two formats for encoding i.e. "binary" or "string". 
+A key or value therefore looks as below:
 ```json
 {
     "encoding": "string",
@@ -153,20 +163,24 @@ Output:
 
 
 # Technique and Assumption
-    For this system to work, Golang and Python3 must be installed. Follow, the requirement.txt and pre-requisite mentioned in the instructions.
-    This is a simple distributed key-value storage system, implemented using BaseHTTPRequestHandler in Python (server side)
+    For this system to work, Golang and Python3 must be installed. Follow, the requirement.txt and pre-requisite
+     mentioned in the instructions.
+    This is a simple distributed key-value storage system, implemented using BaseHTTPRequestHandler in 
+    Python (server side)
     This design, we do not have a communication channel or API to communicate among all the server instances.
     The proxy does the task of sending information to onr of the servers based on the simple hashing technique
-    To build the start for the second phase that will allow persistent storage, we have added a simple technique to dump all the 
-    server specific data to a local file as soon as the server dies on keyboard interrupt.
-    This can be extended further for signal handling and load the data on frequent intervals when the server is up and running again
-    The proxy implements all the above mentioned APIs using net/http import in Golang, adds the suitable headers and pass on the request to the server
+    To build the start for the second phase that will allow persistent storage, we have added a simple technique 
+    to dump all the  server specific data to a local file as soon as the server dies on keyboard interrupt.
+    This can be extended further for signal handling and load the data on frequent intervals when the server is up 
+    and running again
+    The proxy implements all the above mentioned APIs using net/http import in Golang, adds the suitable headers 
+    and pass on the request to the server
     The APIs to communicate between client-proxy and proxy-server follow the same contract
 
 
 # Test
-    We have tested our system for multiple values of n (number of servers, max n = 100) and this system works fine for MacOS, ubuntu,
-    CCIS linux box
+    We have tested our system for multiple values of n (number of servers, max n = 100) and this 
+    system works fine for MacOS, ubuntu, CCIS linux box
 
 # Future Scope
     
