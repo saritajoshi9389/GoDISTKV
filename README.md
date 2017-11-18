@@ -20,12 +20,12 @@ That is, at any given time, a single node might not have all the data
 
         a) proxy.go  
             A proxy/coordinator process keeps track of available servers and data stored in those servers. 
-            A client connects to the proxy/coordinator process to learn the address of a server that it should 
-            connect for performing any operations.
+            A client connects to the proxy/coordinator process to learn the address of a server that 
+            it should connect for performing any operations.
             The proxy server also acts as a load-balancer and ensures a uniform workload distribution 
             among various servers.
-            For this phase of the assignment, we have a hash-function that takes the given key(string/binary), 
-            calculates the server number by a simple mod operation
+            For this phase of the assignment, we have a hash-function that takes the given key
+            (string/binary), calculates the server number by a simple mod operation
             In future, this can be replaced by consistency hashing technique
                 
             Command to run: go run proxy.go <ip:port> <ip:port> <ip:port>
