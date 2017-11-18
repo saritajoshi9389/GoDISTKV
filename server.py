@@ -209,7 +209,6 @@ class DataInstance:
     def search(self, key):
         return key in self.data
 
-
 if __name__ == '__main__':
     print("hi")
     parser = OptionParser()
