@@ -71,7 +71,7 @@ var url string
 const SUCCESS int = 200
 const PARTIAL_SUCCESS int = 206
 const INTERNAL_SERVER_ERROR int = 500
-const OTHER_ERROR int = 405
+const OTHER_ERROR int = 501
 
 func handler(w http.ResponseWriter, r *http.Request,
 total_servers int, server_list []string,
@@ -94,7 +94,7 @@ ip_list []string, port_list []string) {
 		query_handler(w, r, total_servers, ip_list, port_list, contents)
 
 	}else{
-		error_handler(w, )
+		error_handler(w, &ErrorResponse{RCode: OTHER_ERROR, RMessage: "invalid_api_key"})
 
 }
 }

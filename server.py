@@ -157,7 +157,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             return_message, return_code = self.fetch_all()
         else:
             return_code = 501
-            return_message = {"errors": [{"error": "invalid_api_key"}]}
+            return_message = {"invalid_api_key"}
         # send response
         self._set_headers(return_code)
         self.wfile.write(simplejson.dumps(return_message).encode())
