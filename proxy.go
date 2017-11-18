@@ -96,7 +96,6 @@ func handler(w http.ResponseWriter, r *http.Request,
 
 	}
 }
-
 func fetch_handler_all(w http.ResponseWriter, r *http.Request, 
 												total_servers int, ip_list []string, 
 												port_list []string) {
@@ -140,11 +139,9 @@ func fetch_handler_all(w http.ResponseWriter, r *http.Request,
 		fmt.Println("hi result", string(send_message))
 		success_handler(w, send_message, r_code)
 }
+func query_handler_jsonToObj(total_servers int, 
+														contents []uint8) (map [int][]MakeQueryRequest, int) {
 
-func query_handler(w http.ResponseWriter, r *http.Request, 
-												total_servers int, ip_list []string, 
-												port_list []string, contents []uint8) {
-		// contents, _ := ioutil.ReadAll(r.Body)
 		fmt.Println("print contents", string(contents))
 		var d []MakeQueryRequest
 		err1 := json.Unmarshal(contents, &d)
@@ -156,10 +153,7 @@ func query_handler(w http.ResponseWriter, r *http.Request,
 		server_ele := 0
 		struct_map := make(map[int][]MakeQueryRequest)
 		for _, elem := range d {
-			fmt.Println(port_list[server_ele], elem.Data)
-			// sEnc := b64.StdEncoding.EncodeToString([]byte(elem.Key.Data))
-			// val := hash_function(elem.Key.Data)
-			// val := elem.Key.Data[0]
+			// fmt.Println(port_list[server_ele], elem.Data)
 			temp_struct := MakeQueryRequest{
 					Encoding:  elem.Encoding,
 					Data: elem.Data,
@@ -169,6 +163,14 @@ func query_handler(w http.ResponseWriter, r *http.Request,
 			struct_map[index] = append(struct_map[index], temp_struct)
 			server_ele ++
 		}
+		return struct_map,server_ele
+	}
+func query_handler(w http.ResponseWriter, r *http.Request, 
+												total_servers int, ip_list []string, 
+												port_list []string, contents []uint8) {
+		// contents, _ := ioutil.ReadAll(r.Body)
+		struct_map,server_ele := query_handler_jsonToObj(total_servers,contents)
+		
 		fmt.Println("No of requests ", server_ele)
 		i := 0
 		var wg sync.WaitGroup
@@ -356,11 +358,9 @@ func format_fetch_response(responses []*http.Response) ([]byte, int) {
 	return body, code
 
 }
+func set_handler_jsonToObj(total_servers int, 
+													contents []uint8) (map [int][]MyData, int){
 
-func set_handler(w http.ResponseWriter, r *http.Request, 
-												total_servers int, ip_list []string, 
-												port_list []string, contents []uint8) {
-		// contents, _ := ioutil.ReadAll(r.Body)
 		var d []MyData
 		err1 := json.Unmarshal(contents, &d)
 		if err1 != nil {
@@ -390,6 +390,13 @@ func set_handler(w http.ResponseWriter, r *http.Request,
 			struct_map[index] = append(struct_map[index], temp_struct)
 			server_ele ++
 		}
+		return struct_map, server_ele
+}
+func set_handler(w http.ResponseWriter, r *http.Request, 
+												total_servers int, ip_list []string, 
+												port_list []string, contents []uint8) {
+		// contents, _ := ioutil.ReadAll(r.Body)
+		struct_map,server_ele := set_handler_jsonToObj(total_servers,contents)
 		fmt.Println("No of requests ", server_ele)
 		i := 0
 		var wg sync.WaitGroup
