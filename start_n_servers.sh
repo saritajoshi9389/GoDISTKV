@@ -1,8 +1,8 @@
 #!/bin/bash
 value=9000
 
-# for number in {1..99}
-for number in {1..3}
+for number in {1..99}
+# for number in {1..3}
 do
 temp=$(expr $value + $number)
 # echo $temp
