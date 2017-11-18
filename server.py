@@ -45,7 +45,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 flag = True
                 if temp_store:
                     flag = False
-                if kv["key"]["encoding"] in ("binary", "string"):
+                if kv["key"]["encoding"] in ("binary", "string") and kv["value"]["encoding"] in ("binary", "string"):
                     result = self.server.kveachinstance.set_value(frozenset(kv["key"].items()),
                                                                   frozenset(kv["value"].items()))
                 else:
@@ -96,18 +96,20 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         code = 200
         try:
             for k in message:
-                if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
-                    result = [{
-                        "key": k,
-                        "value": {}
-                    }]
-                else:
-                    result = [
-                        {
+                if k["key"]["encoding"] in ("binary", "string"):
+                    if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
+                        result = [{
                             "key": k,
-                            "value": dict(self.server.kveachinstance.get_value(frozenset(k.items())))
-                        }
-                    ]
+                            "value": {}
+                        }]
+                    else:
+                        result = [
+                            {
+                                "key": k,
+                                "value": dict(self.server.kveachinstance.get_value(frozenset(k.items())))
+                         }]
+                else:
+                    result = [{None}]
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
@@ -118,18 +120,21 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         code = 200
         try:
             for k in message:
-                if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
-                    result = [{
-                        "key": k,
-                        "value": False
-                    }]
-                else:
-                    result = [
-                        {
+                if k["key"]["encoding"] in ("binary", "string"):
+                    if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
+                        result = [{
                             "key": k,
-                            "value": True
-                        }
-                    ]
+                            "value": False
+                        }]
+                    else:
+                        result = [
+                            {
+                                "key": k,
+                                "value": True
+                            }
+                        ]
+                else:
+                    result = [{None}]
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
