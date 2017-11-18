@@ -5,16 +5,18 @@
 # Author: Sarita Joshi and Akshaya Khare
 # CS 5600
 CC=gcc -g -O3
+GO=go build
 all: 	clean
 
 default: check
 clean:
-	rm -rf hw5  *.o *.dat
-hw5.o:hw5.c
-		${CC} -c -Wall -o hw5.o hw5.c -O3 -lm
-hw5:hw5.o
-		${CC} -g -o hw5 hw5.o -O3 -lm
-build:hw5
-calculate:
+	rm -rf proxy
+proxy:	proxy.go
+	$(GO) proxy.go
+dependencies: requirement.txt
+		pip3 install -r requirement.txt
+server:
+	./start_n_servers.sh
+run:
 	./hw5
-check:clean build calculate
+check:clean build run
