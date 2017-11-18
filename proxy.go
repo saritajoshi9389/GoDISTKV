@@ -38,7 +38,7 @@ type ErrorResponse struct {
 }
 
 type SetResponse struct {
-	KeysFailed       []string `json:"keys_failed"`
+	KeysFailed       []Key `json:"keys_failed"`
 	KeysAdded int	`json:"keys_added"`
 }
 //
@@ -438,7 +438,7 @@ func set_handler(w http.ResponseWriter, r *http.Request, total_servers int, serv
 }
 func format_set_response(responses []*http.Response) ([]byte, int) {
 	fmt.Println("lenth of response", len(responses))
-	failed_map := make([]string, 0)
+	failed_map := make([]Key, 0)
 	count_of_keys := 0
 	code := SUCCESS
 	for _, response := range responses {

@@ -13,7 +13,7 @@ import json
 class CustomHandler(http.server.BaseHTTPRequestHandler):
     def do_PUT(self):
         """Respond to a PUT request for storing a key"""
-        # print("Received PUT request")
+        print("Received PUT request")
         return_code = 200
         return_message = None
         try:
@@ -28,7 +28,6 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 return
             if self.path == "/set":
                 return_message, return_code = self.process_valid_put_request(message)
-            # print(return_message, return_code, "debug", simplejson.dumps(return_message).encode())
             self._set_headers(return_code)
             self.wfile.write(simplejson.dumps(return_message).encode())
         except Exception as err:
@@ -42,23 +41,20 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         count = 0
         try:
             for kv in message:
-                # print(kv["key"], kv["value"], self, self.server, self.server.kveachinstance)
-                # print("haha1.....", frozenset(kv["key"].items()))
                 temp_store = self.server.kveachinstance.get_value((frozenset(kv["key"].items())))
                 flag = True
-                if (temp_store):
+                if temp_store:
                     flag = False
-                result = self.server.kveachinstance.set_value(frozenset(kv["key"].items()),
-                                                              frozenset(kv["value"].items()))
-                # print("haha2")
-                # print(result)
+                if kv["key"]["encoding"] in ("binary", "string"):
+                    result = self.server.kveachinstance.set_value(frozenset(kv["key"].items()),
+                                                                  frozenset(kv["value"].items()))
+                else:
+                    result = False
                 if not result:
-                    # print("haha3")
                     failed_inputs.append(kv["key"])
                 else:
                     if flag:
                         count += 1
-                        # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
@@ -66,11 +62,6 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         if count < len(message):
             code = 206
         return {"keys_failed": failed_inputs, "keys_added": count}, code
-
-    __key_pattern = re.compile("^[a-zA-Z0-9]+$")
-
-    def valid_key(self, key):
-        return self.__key_pattern.match(key)
 
     def do_POST(self):
         """Respond to a POST request for storing a key"""
@@ -83,10 +74,10 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             content_type = self.headers.get("Content-type")
             data = self.rfile.read(content_length)
             message = simplejson.loads(data)
-            # if content_type != 'application/json':
-            #     self.send_response(400)
-            #     self.end_headers()
-            #     return
+            if content_type != 'application/json':
+                self.send_response(400)
+                self.end_headers()
+                return
             if self.path == "/query":
                 return_message, return_code = self.query_results(message)
             elif self.path == "/fetch":
@@ -94,7 +85,6 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             else:
                 return_code = 501
                 return_message = {"errors": [{"error": "invalid_api_key"}]}
-            # print(return_message, return_code, "debug", simplejson.dumps(return_message).encode())
             self._set_headers(return_code)
             self.wfile.write(simplejson.dumps(return_message).encode())
         except Exception as err:
@@ -106,8 +96,6 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         code = 200
         try:
             for k in message:
-                # print(frozenset(k["key"].items()), "frozen")
-                # print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
                 if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
                     result = [{
                         "key": k,
@@ -120,7 +108,6 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                             "value": dict(self.server.kveachinstance.get_value(frozenset(k.items())))
                         }
                     ]
-                    # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
@@ -131,8 +118,6 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         code = 200
         try:
             for k in message:
-                # print(frozenset(k["key"].items()), "frozen")
-                # print(self.server.kveachinstance.get_value(frozenset(k["key"].items())))
                 if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
                     result = [{
                         "key": k,
@@ -145,7 +130,6 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                             "value": True
                         }
                     ]
-                    # print("result baby", self.server.kveachinstance.get_value(frozenset(kv["key"].items())))
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
@@ -158,6 +142,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        print("Received GET request")
         code = 404
         message = None
         if self.path == '/fetch':
@@ -205,8 +190,8 @@ class DataInstance:
     def search(self, key):
         return key in self.data
 
+
 if __name__ == '__main__':
-    print("hi")
     parser = OptionParser()
     parser.add_option("-p", "--port", dest="port", help="local port to listen on", type="int", default=9000)
     parser.add_option("-d", "--data", dest="data_dir", help="data directory", type="string", default="data")
@@ -221,6 +206,5 @@ if __name__ == '__main__':
     httpd.server_close()
     folder = str(options.port) + options.data_dir
     with open(folder + '/result.json', 'a') as fp:
-        print(initial_data.data)
         json.dump(str(initial_data.data), fp)
     print(("Server Stops - {}:{}".format("localhost", options.port)))
