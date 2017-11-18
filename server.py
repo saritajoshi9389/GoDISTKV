@@ -27,7 +27,8 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             if self.path == "/set":
-                return_message, return_code = self.process_valid_put_request(message)
+                return_message, return_code = self.process_valid_put_request(
+                    message)
             else:
                 return_code = 501
                 return_message = {"errors": [{"error": "invalid_api_key"}]}
@@ -44,10 +45,15 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         count = 0
         try:
             for kv in message:
-                temp_store = self.server.kveachinstance.get_value((frozenset(kv["key"].items())))
+                temp_store = self.server.kveachinstance.get_value(
+                    (frozenset(kv["key"].items())))
                 flag = True
                 if temp_store:
-                    flag = False
+                    print("temp_store is -> ", (dict(temp_store)
+                                                ["data"]), kv["value"]["data"])
+
+                    if (dict(temp_store)["data"]) == kv["value"]["data"]:
+                        flag = False
                 if kv["key"]["encoding"] in ("binary", "string") and kv["value"]["encoding"] in ("binary", "string"):
                     result = self.server.kveachinstance.set_value(frozenset(kv["key"].items()),
                                                                   frozenset(kv["value"].items()))
@@ -110,7 +116,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                             {
                                 "key": k,
                                 "value": dict(self.server.kveachinstance.get_value(frozenset(k.items())))
-                         }]
+                            }]
                 else:
                     result = [{None}]
         except TypeError:
