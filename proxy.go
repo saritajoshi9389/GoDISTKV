@@ -41,13 +41,6 @@ type SetResponse struct {
 	KeysFailed       []string `json:"keys_failed"`
 	KeysAdded int	`json:"keys_added"`
 }
-//
-//type MakeQueryRequest struct {
-//	Key struct {
-//		Encoding string `json:"encoding"`
-//		Data     string `json:"data"`
-//	} `json:"key"`
-//}
 
 type MakeQueryRequest struct {
 	Encoding string `json:"encoding"`
@@ -86,19 +79,20 @@ func handler(w http.ResponseWriter, r *http.Request,
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "X-Requested-With")
 	fmt.Println(r.URL.Path, "hi path", r.Method)
+	contents,_ := ioutil.ReadAll(r.Body)
 
 	if (r.URL.Path == "/set") {
-		set_handler(w, r, total_servers, ip_list, port_list)
+		set_handler(w, r, total_servers, ip_list, port_list, contents)
 
 	} else if (r.URL.Path == "/fetch" && r.Method == "POST") {
-		fetch_handler(w, r, total_servers, ip_list,port_list)
+		fetch_handler(w, r, total_servers, ip_list,port_list, contents)
 
 	} else if (r.URL.Path == "/fetch" && r.Method == "GET") {
 		fmt.Println("hi bbay")
 		fetch_handler_all(w, r, total_servers, ip_list,port_list)
 
 	}else if (r.URL.Path == "/query") {
-		query_handler(w, r, total_servers, ip_list, port_list)
+		query_handler(w, r, total_servers, ip_list, port_list,contents)
 
 	}
 }
@@ -106,7 +100,6 @@ func handler(w http.ResponseWriter, r *http.Request,
 func fetch_handler_all(w http.ResponseWriter, r *http.Request, 
 												total_servers int, ip_list []string, 
 												port_list []string) {
-	if (r.URL.Path == "/fetch") {
 		var i = 0
 		resps := make([]*http.Response, 0)
 		respsChan := make(chan *http.Response)
@@ -146,20 +139,17 @@ func fetch_handler_all(w http.ResponseWriter, r *http.Request,
 		send_message, r_code := format_fetch_response(resps)
 		fmt.Println("hi result", string(send_message))
 		success_handler(w, send_message, r_code)
-
-	}
 }
 
 func query_handler(w http.ResponseWriter, r *http.Request, 
 												total_servers int, ip_list []string, 
-												port_list []string) {
-	if (r.URL.Path == "/query") {
-		contents, _ := ioutil.ReadAll(r.Body)
+												port_list []string, contents []uint8) {
+		// contents, _ := ioutil.ReadAll(r.Body)
 		fmt.Println("print contents", string(contents))
 		var d []MakeQueryRequest
 		err1 := json.Unmarshal(contents, &d)
 		if err1 != nil {
-			fmt.Printf("hiiii%s", err1)
+			fmt.Printf("Error in unmarshalling ->%s", err1)
 			os.Exit(1)
 		}
 		fmt.Println("len", reflect.TypeOf(d), len(d) ,d[0])
@@ -226,8 +216,6 @@ func query_handler(w http.ResponseWriter, r *http.Request,
 		send_message, r_code := format_query_response(resps)
 		fmt.Println("hi result", string(send_message))
 		success_handler(w, send_message, r_code)
-
-	}
 }
 
 
@@ -260,16 +248,16 @@ func format_query_response(responses []*http.Response) ([]byte, int) {
 }
 
 
+
 func fetch_handler(w http.ResponseWriter, r *http.Request, 
 												total_servers int, ip_list []string, 
-												port_list []string) {
-	if (r.URL.Path == "/fetch") {
-		contents, _ := ioutil.ReadAll(r.Body)
-		fmt.Println("print contents", string(contents))
+												port_list []string, contents []uint8) {
+		// contents, _ := ioutil.ReadAll(r.Body)
+		fmt.Println("print contents", string(contents), reflect.TypeOf(contents))
 		var d []MakeQueryRequest
 		err1 := json.Unmarshal(contents, &d)
 		if err1 != nil {
-			fmt.Printf("hiiii%s", err1)
+			fmt.Printf("Error in unmarshalling ->%s", err1)
 			os.Exit(1)
 		}
 		fmt.Println("len", reflect.TypeOf(d), len(d) ,d[0])
@@ -333,8 +321,6 @@ func fetch_handler(w http.ResponseWriter, r *http.Request,
 		send_message, r_code := format_fetch_response(resps)
 		fmt.Println("hi result", string(send_message))
 		success_handler(w, send_message, r_code)
-
-	}
 }
 
 func format_fetch_response(responses []*http.Response) ([]byte, int) {
@@ -367,14 +353,12 @@ func format_fetch_response(responses []*http.Response) ([]byte, int) {
 
 func set_handler(w http.ResponseWriter, r *http.Request, 
 												total_servers int, ip_list []string, 
-												port_list []string) {
-	/////////////////////////
-	if (r.URL.Path == "/set") {
-		contents, _ := ioutil.ReadAll(r.Body)
+												port_list []string, contents []uint8) {
+		// contents, _ := ioutil.ReadAll(r.Body)
 		var d []MyData
 		err1 := json.Unmarshal(contents, &d)
 		if err1 != nil {
-			fmt.Printf("hiiii%s", err1)
+			fmt.Printf("Error in unmarshalling ->%s", err1)
 			os.Exit(1)
 		}
 		fmt.Println("len", reflect.TypeOf(d), len(d) ,d[0])
@@ -447,8 +431,6 @@ func set_handler(w http.ResponseWriter, r *http.Request,
 		send_message, r_code := format_set_response(resps)
 		fmt.Println("hi result", string(send_message))
 		success_handler(w, send_message, r_code)
-
-	}
 }
 func format_set_response(responses []*http.Response) ([]byte, int) {
 	fmt.Println("lenth of response", len(responses))
@@ -482,7 +464,6 @@ func format_set_response(responses []*http.Response) ([]byte, int) {
 		return nil, INTERNAL_SERVER_ERROR
 	}
 	return body, code
-
 }
 
 func success_handler(w http.ResponseWriter, reply []byte, code int) {
@@ -501,11 +482,11 @@ func error_handler(w http.ResponseWriter, e *ErrorResponse) {
 	w.WriteHeader(e.RCode)
 	w.Write(resp)
 }
+
 func hash_function(str string) (int){
 	i:= 0
 	sum:=0
 	for i=0;i<len(str);i++{
-		// fmt.Println(i,"->",int(str[i]));
 		sum = sum + int(str[i])
 	}
 	return sum
@@ -517,8 +498,6 @@ func distribute_servers(length int,server_list []string)([]string, []string){
 	var port_list = make([]string, length)
 	for i := 0;i<length;i++{
 		ip_port := strings.Split(server_list[i],":")
-		// ip_list = append(ip_list, ip_port[1])
-		// port_list = append(port_list, ip_port[2])
 		ip_list[i] = ip_port[1]
 		port_list[i] = ip_port[2]
 	}
@@ -528,7 +507,6 @@ func main() {
 	// fmt.Println(hash_function("yoyoyo"))
 	// for i := 1;i<=100;i++{
 	// 	fmt.Print("{\"key\":{\"encoding\":\"string\",\"data\":\"key",i,"\"},\"value\":{\"encoding\":\"string\",\"data\":\"value",i,"\"}},")
-	// // 	// fmt.Println("{\"key\":{\"encoding\":\"binary\",\"data\":\"1010010",(i%2),"},\"value\":{\"encoding\":\"string\",\"data\":\"value1\"}}, \\")
 	// }
 	arg := os.Args[1:]
 	server_list := arg[1:]
@@ -536,7 +514,6 @@ func main() {
 	ip_list,port_list := distribute_servers(total_servers,server_list)
 	fmt.Println("whaaaaaaaaaaa",ip_list,port_list)
 	
-	// fmt.Println("oyeeeeeeeeeeeeeeeeeeeeee", total_servers, server_list)
 	if arg[0] != "-p" {
 		fmt.Println("Incorrect flag variable, exiting....")
 		return
