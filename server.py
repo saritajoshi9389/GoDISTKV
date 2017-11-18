@@ -27,7 +27,8 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             if self.path == "/set":
-                return_message, return_code = self.process_valid_put_request(message)
+                return_message, return_code = self.process_valid_put_request(
+                    message)
             # print(return_message, return_code, "debug", simplejson.dumps(return_message).encode())
             self._set_headers(return_code)
             self.wfile.write(simplejson.dumps(return_message).encode())
@@ -44,7 +45,8 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             for kv in message:
                 # print(kv["key"], kv["value"], self, self.server, self.server.kveachinstance)
                 # print("haha1.....", frozenset(kv["key"].items()))
-                temp_store = self.server.kveachinstance.get_value((frozenset(kv["key"].items())))
+                temp_store = self.server.kveachinstance.get_value(
+                    (frozenset(kv["key"].items())))
                 flag = True
                 if (temp_store):
                     flag = False
@@ -174,9 +176,11 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
 
 class CustomHttpServer(http.server.HTTPServer):
     def __init__(self, server_address, RequestHandlerClass, data_dir="data", data_map=''):
-        super(CustomHttpServer, self).__init__(server_address, RequestHandlerClass)
+        super(CustomHttpServer, self).__init__(
+            server_address, RequestHandlerClass)
         self.data_dir = data_dir
-        if not os.path.exists(self.data_dir): os.mkdir(self.data_dir)
+        # if not os.path.exists(self.data_dir):
+        #     os.mkdir(self.data_dir)
         self.kveachinstance = data_map
 
 
@@ -195,7 +199,7 @@ class DataInstance:
                 "key": dict(key),
                 "value": dict(self.data[key])
             } for key in self.data
-            ]
+        ]
         return var
 
     def set_value(self, key, value):
@@ -209,19 +213,22 @@ class DataInstance:
 if __name__ == '__main__':
     print("hi")
     parser = OptionParser()
-    parser.add_option("-p", "--port", dest="port", help="local port to listen on", type="int", default=9000)
-    parser.add_option("-d", "--data", dest="data_dir", help="data directory", type="string", default="data")
+    parser.add_option("-p", "--port", dest="port",
+                      help="local port to listen on", type="int", default=9000)
+    parser.add_option("-d", "--data", dest="data_dir",
+                      help="data directory", type="string", default="data")
     (options, node_urls) = parser.parse_args()
     initial_data = DataInstance()
-    httpd = CustomHttpServer(("", options.port), CustomHandler, str(options.port) + options.data_dir, initial_data)
+    httpd = CustomHttpServer(("", options.port), CustomHandler, str(
+        options.port) + options.data_dir, initial_data)
     print(("Server Starts - {}:{}".format("localhost", options.port)))
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
     httpd.server_close()
-    folder = str(options.port) + options.data_dir
-    with open(folder + '/result.json', 'a') as fp:
-        print(initial_data.data)
-        json.dump(str(initial_data.data), fp)
+    # folder = str(options.port) + options.data_dir
+    # with open(folder + '/result.json', 'a') as fp:
+    #     print(initial_data.data)
+    #     json.dump(str(initial_data.data), fp)
     print(("Server Stops - {}:{}".format("localhost", options.port)))

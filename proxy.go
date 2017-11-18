@@ -526,10 +526,10 @@ func distribute_servers(length int,server_list []string)([]string, []string){
 }
 func main() {
 	// fmt.Println(hash_function("yoyoyo"))
-	// for i := 1;i<=100;i++{
-	// 	fmt.Println("{\"key\":{\"encoding\":\"string\",\"data\":\"key",i,"},\"value\":{\"encoding\":\"string\",\"data\":\"value",i,"\"}}, \\")
+	for i := 1;i<=100;i++{
+		fmt.Print("{\"key\":{\"encoding\":\"string\",\"data\":\"key",i,"\"},\"value\":{\"encoding\":\"string\",\"data\":\"value",i,"\"}},")
 	// 	// fmt.Println("{\"key\":{\"encoding\":\"binary\",\"data\":\"1010010",(i%2),"},\"value\":{\"encoding\":\"string\",\"data\":\"value1\"}}, \\")
-	// }
+	}
 	arg := os.Args[1:]
 	server_list := arg[1:]
 	total_servers := len(server_list)
