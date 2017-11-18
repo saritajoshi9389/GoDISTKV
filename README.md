@@ -163,18 +163,19 @@ Output:
 
 
 # Technique and Assumption
-    For this system to work, Golang and Python3 must be installed. Follow, the requirement.txt and pre-requisite
-     mentioned in the instructions.
-    This is a simple distributed key-value storage system, implemented using BaseHTTPRequestHandler in 
-    Python (server side)
+    For this system to work, Golang and Python3 must be installed. Follow, the requirement.txt 
+    and pre-requisite mentioned in the instructions.
+    This is a simple distributed key-value storage system, implemented using BaseHTTPRequestHandler
+    in Python (server side)
     This design, we do not have a communication channel or API to communicate among all the server instances.
     The proxy does the task of sending information to onr of the servers based on the simple hashing technique
-    To build the start for the second phase that will allow persistent storage, we have added a simple technique 
-    to dump all the  server specific data to a local file as soon as the server dies on keyboard interrupt.
-    This can be extended further for signal handling and load the data on frequent intervals when the server is up 
-    and running again
-    The proxy implements all the above mentioned APIs using net/http import in Golang, adds the suitable headers 
-    and pass on the request to the server
+    To build the start for the second phase that will allow persistent storage, we have added a simple 
+    technique to dump all the  server specific data to a local file as soon as the server dies on keyboard 
+    interrupt.
+    This can be extended further for signal handling and load the data on frequent intervals when the server
+    is up and running again
+    The proxy implements all the above mentioned APIs using net/http import in Golang, adds the 
+    suitable headers and pass on the request to the server
     The APIs to communicate between client-proxy and proxy-server follow the same contract
 
 
