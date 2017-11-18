@@ -28,6 +28,9 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 return
             if self.path == "/set":
                 return_message, return_code = self.process_valid_put_request(message)
+            else:
+                return_code = 501
+                return_message = {"errors": [{"error": "invalid_api_key"}]}
             self._set_headers(return_code)
             self.wfile.write(simplejson.dumps(return_message).encode())
         except Exception as err:
@@ -96,7 +99,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         code = 200
         try:
             for k in message:
-                if k["key"]["encoding"] in ("binary", "string"):
+                if k["encoding"] in ("binary", "string"):
                     if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
                         result = [{
                             "key": k,
@@ -120,7 +123,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
         code = 200
         try:
             for k in message:
-                if k["key"]["encoding"] in ("binary", "string"):
+                if k["encoding"] in ("binary", "string"):
                     if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
                         result = [{
                             "key": k,
@@ -148,13 +151,16 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         print("Received GET request")
-        code = 404
-        message = None
+        return_code = 404
+        return_message = None
         if self.path == '/fetch':
-            message, code = self.fetch_all()
+            return_message, return_code = self.fetch_all()
+        else:
+            return_code = 501
+            return_message = {"errors": [{"error": "invalid_api_key"}]}
         # send response
-        self._set_headers(code)
-        self.wfile.write(simplejson.dumps(message).encode())
+        self._set_headers(return_code)
+        self.wfile.write(simplejson.dumps(return_message).encode())
 
     def fetch_all(self):
         code = 200
