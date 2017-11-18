@@ -85,7 +85,6 @@ ip_list []string, port_list []string) {
 		fetch_handler(w, r, total_servers, ip_list, port_list, contents)
 
 	} else if (r.URL.Path == "/fetch" && r.Method == "GET") {
-		fmt.Println("hi bbay")
 		fetch_handler_all(w, r, total_servers, ip_list, port_list)
 
 	} else if (r.URL.Path == "/query") {
