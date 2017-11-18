@@ -367,45 +367,29 @@ func set_handler_jsonToObj(total_servers int,
 			fmt.Printf("Error in unmarshalling ->%s", err1)
 			os.Exit(1)
 		}
+		fmt.Println("len", reflect.TypeOf(d), len(d) ,d[0])
+		//fmt.Println("URL::",url)
+		server_ele := 0
+		struct_map := make(map[int][]MyData)
+		for _, elem := range d {
+			//fmt.Println(elem.Key,elem.Value.Data,server_list[server_ele])
+			// val := hash_function(elem.Key.Data)
+			temp_struct := MyData{
+				Key: Key{
+					Encoding:  elem.Key.Encoding,
+					Data: elem.Key.Data,
+				},
+				Value: Value{
+					Encoding: elem.Value.Encoding,
+					Data: elem.Value.Data,
+				},
+		}
 		index := hash_function(elem.Key.Data) % total_servers // changing from 3 to total_servers
 		fmt.Println("ahhhh", index)
 
 		struct_map[index] = append(struct_map[index], temp_struct)
 		server_ele ++
 	}
-	fmt.Println("No of requests ", server_ele)
-	i := 0
-	var wg sync.WaitGroup
-	wg.Add(len(struct_map))
-	respsChan := make(chan *http.Response)
-	resps := make([]*http.Response, 0)
-	for i < total_servers {
-		if val, ok := struct_map[i]; ok {
-			json_obj, _ := json.Marshal(val)
-			fmt.Println(string(json_obj))
-			fmt.Println("temp_struct", val, i, ip_list[i], port_list[i])
-			url = strings.Join([]string{"http://", string(ip_list[i]), ":", string(port_list[i]), r.URL.Path}, "")
-			fmt.Println("Did URL Change/ ->", url)
-			response, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(json_obj))
-			if err != nil {
-				os.Exit(2)
-			} else {
-				go func(response *http.Request) {
-					defer response.Body.Close()
-					defer wg.Done()
-					response.Header.Set("Content-Type", "application/json")
-					client := &http.Client{}
-					resp_received, err := client.Do(response)
-					if err != nil {
-						panic(err)
-					} else {
-						respsChan <- resp_received
-					}
-					time.Sleep(time.Second * 2)
-				}(response)
-			}
-
-		}
 		return struct_map, server_ele
 }
 func set_handler(w http.ResponseWriter, r *http.Request, 
