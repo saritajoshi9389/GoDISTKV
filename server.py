@@ -159,9 +159,11 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
 
 class CustomHttpServer(http.server.HTTPServer):
     def __init__(self, server_address, RequestHandlerClass, data_dir="data", data_map=''):
-        super(CustomHttpServer, self).__init__(server_address, RequestHandlerClass)
+        super(CustomHttpServer, self).__init__(
+            server_address, RequestHandlerClass)
         self.data_dir = data_dir
-        if not os.path.exists(self.data_dir): os.mkdir(self.data_dir)
+        # if not os.path.exists(self.data_dir):
+        #     os.mkdir(self.data_dir)
         self.kveachinstance = data_map
 
 
@@ -180,7 +182,7 @@ class DataInstance:
                 "key": dict(key),
                 "value": dict(self.data[key])
             } for key in self.data
-            ]
+        ]
         return var
 
     def set_value(self, key, value):
@@ -193,11 +195,14 @@ class DataInstance:
 
 if __name__ == '__main__':
     parser = OptionParser()
-    parser.add_option("-p", "--port", dest="port", help="local port to listen on", type="int", default=9000)
-    parser.add_option("-d", "--data", dest="data_dir", help="data directory", type="string", default="data")
+    parser.add_option("-p", "--port", dest="port",
+                      help="local port to listen on", type="int", default=9000)
+    parser.add_option("-d", "--data", dest="data_dir",
+                      help="data directory", type="string", default="data")
     (options, node_urls) = parser.parse_args()
     initial_data = DataInstance()
-    httpd = CustomHttpServer(("", options.port), CustomHandler, str(options.port) + options.data_dir, initial_data)
+    httpd = CustomHttpServer(("", options.port), CustomHandler, str(
+        options.port) + options.data_dir, initial_data)
     print(("Server Starts - {}:{}".format("localhost", options.port)))
     try:
         httpd.serve_forever()
