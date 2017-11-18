@@ -496,11 +496,26 @@ func hash_function(str string) (int){
 	}
 	return sum
 }
+
+func distribute_servers(length int,server_list []string)([]string, []string){
+
+	var ip_list = make([]string, length)
+	var port_list = make([]string, length)
+	for i := 0;i<length;i++{
+		ip_port := strings.Split(server_list[i],":")
+		ip_list = append(ip_list, ip_port[0])
+		port_list = append(port_list, ip_port[1])
+	}
+	return ip_list,port_list
+}
 func main() {
 	// fmt.Println(hash_function("yoyoyo"))
 	arg := os.Args[1:]
 	server_list := arg[1:]
 	total_servers := len(server_list)
+	ip_list,port_list := distribute_servers(total_servers,server_list)
+	// fmt.Println("whaaaaaaaaaaa",ip_list,port_list)
+	
 	fmt.Println("oyeeeeeeeeeeeeeeeeeeeeee", total_servers, server_list)
 	if arg[0] != "-p" {
 		fmt.Println("Incorrect flag variable, exiting....")
