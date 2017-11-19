@@ -11,6 +11,7 @@ import json
 
 
 class CustomHandler(http.server.BaseHTTPRequestHandler):
+    # def check_dict(dict)
     def do_PUT(self):
         """Respond to a PUT request for storing a key"""
         print("Received PUT request")
@@ -39,6 +40,28 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(500)
             self.end_headers()
 
+    def check_binary(self, str):
+        for c in str:
+            if c not in ('1', '0'):
+                return False
+        return True
+
+    def verify_dict(self, kv):
+        correct_json = True
+        if not (kv["key"]["encoding"] == kv["value"]["encoding"]):
+            correct_json = False
+        if (kv["key"]["encoding"] == "binary"):
+            if self.check_binary(kv["key"]["data"]):
+                if not self.check_binary(kv["value"]["data"]):
+                    correct_json = False
+            else:
+                correct_json = False
+
+        if not(kv["key"]["encoding"] in ("binary", "string") and
+               kv["value"]["encoding"] in ("binary", "string")):
+            correct_json = False
+        return correct_json
+
     def process_valid_put_request(self, message):
         code = 200
         failed_inputs = []
@@ -51,10 +74,11 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 if temp_store:
                     print("temp_store is -> ", (dict(temp_store)
                                                 ["data"]), kv["value"]["data"])
-
                     if (dict(temp_store)["data"]) == kv["value"]["data"]:
                         flag = False
-                if kv["key"]["encoding"] in ("binary", "string") and kv["value"]["encoding"] in ("binary", "string"):
+
+                correct_json = self.verify_dict(kv)
+                if correct_json:
                     result = self.server.kveachinstance.set_value(frozenset(kv["key"].items()),
                                                                   frozenset(kv["value"].items()))
                 else:
@@ -101,9 +125,20 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(500)
             self.end_headers()
 
+    def verify_dict_get(self, k):
+        correct_json = True
+        if (k["encoding"] == "binary"):
+            if not self.check_binary(k["data"]):
+                correct_json = False
+
+        if not(k["encoding"] in ("binary", "string")):
+            correct_json = False
+        return correct_json
+
     def fetch_results(self, message):
         code = 200
         try:
+            result = []
             for k in message:
                 if k["encoding"] in ("binary", "string"):
                     if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
@@ -112,11 +147,10 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                             "value": {}
                         }]
                     else:
-                        result = [
-                            {
-                                "key": k,
-                                "value": dict(self.server.kveachinstance.get_value(frozenset(k.items())))
-                            }]
+                        result.append(
+                            {"key": k,
+                             "value": dict(self.server.kveachinstance.get_value(frozenset(k.items())))
+                             })
                 else:
                     result = [{None}]
         except TypeError:
@@ -128,20 +162,17 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
     def query_results(self, message):
         code = 200
         try:
+            result = []
             for k in message:
-                if k["encoding"] in ("binary", "string"):
+                correct_json = self.verify_dict_get(k)
+                if correct_json:
                     if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
                         result = [{
                             "key": k,
                             "value": False
                         }]
                     else:
-                        result = [
-                            {
-                                "key": k,
-                                "value": True
-                            }
-                        ]
+                        result.append({"key": k, "value": True})
                 else:
                     result = [{None}]
         except TypeError:
