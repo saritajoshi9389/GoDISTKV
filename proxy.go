@@ -466,7 +466,7 @@ func main() {
 		handler(w, r, total_servers, server_list, ip_list, port_list)
 	})
 	fmt.Println("Proxy up and running!!!")
-	err := http.ListenAndServe("localhost:8080", nil)
+	err := http.ListenAndServe("localhost:8100", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

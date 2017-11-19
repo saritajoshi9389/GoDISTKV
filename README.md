@@ -57,7 +57,7 @@ That is, at any given time, a single node might not have all the data
 4) Makefile (Run and execution steps)
 
             To install all the dependencies
-               -    Proxy by default runs on 8080 (hardcoded in the proxy application)
+               -    Proxy by default runs on 8100 (hardcoded in the proxy application)
                -    make dependencies :: This will go a `python pip3 install -r requirements.txt` (Not required for ccis machine)
                -    make run_proxy :: creates the proxy binary and runs the same
                -    make stop :: stops the server and the proxy
