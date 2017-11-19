@@ -57,7 +57,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 correct_json = False
 
         if not (kv["key"]["encoding"] in ("binary", "string") and
-                        kv["value"]["encoding"] in ("binary", "string")):
+                kv["value"]["encoding"] in ("binary", "string")):
             correct_json = False
         return correct_json
 
@@ -71,8 +71,6 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                     (frozenset(kv["key"].items())))
                 flag = True
                 if temp_store:
-                    print("temp_store is -> ", (dict(temp_store)
-                                                ["data"]), kv["value"]["data"])
                     if (dict(temp_store)["data"]) == kv["value"]["data"]:
                         flag = False
 
@@ -236,7 +234,7 @@ class DataInstance:
                 "key": dict(key),
                 "value": dict(self.data[key])
             } for key in self.data
-            ]
+        ]
         return var
 
     def set_value(self, key, value):
