@@ -17,6 +17,12 @@ dependencies: requirement.txt
 		pip3 install -r requirement.txt
 server:
 	./start_n_servers.sh
-run:
-	./hw5
-check:clean build run
+run_proxy: proxy
+	./run_proxy.sh &
+run: stop run_proxy
+	./start_n_servers.sh && sleep 2
+	./client.sh && sleep 2 && printf "\nDone"
+stop:
+	./stop_proxy.sh &
+	 ./stop_servers.sh
+check:clean run

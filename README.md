@@ -57,10 +57,13 @@ That is, at any given time, a single node might not have all the data
 4) Makefile
 
             To install all the dependencies
-               -    make dependencies :: This will go a `python pip3 install -r requirements.txt`
-               -    make proxy :: 
-               -    make server ::
-               -    make run :: 
+               -    Proxy by default runs on 8080 (hardcoded in the proxy application)
+               -    make dependencies :: This will go a `python pip3 install -r requirements.txt` (Not required for ccis machine)
+               -    make run_proxy :: creates the proxy binary and runs the same
+               -    make stop :: stops the server and the proxy
+               -    make run ::  builds executes and runs everything (Testing for 3 servers on port 9001 9002 9003)
+               -    make check :: cleans and runs the entire submission.
+               -    We have individual scripts to start and stop servers and stop/start proxy
 5) requirements.txt
             
             Stores all the python dependencies
@@ -182,6 +185,7 @@ Output:
 # Test
     We have tested our system for multiple values of n (number of servers, max n = 100) and this 
     system works fine for MacOS, ubuntu, CCIS linux box
+    You can modify the script to change the for loop until 100 and show work
 
 # Future Scope
     
