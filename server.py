@@ -6,7 +6,6 @@ import http
 import http.client
 import re
 import urllib.parse
-import simplejson
 import json
 
 
@@ -21,7 +20,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers.get("Content-length"))
             content_type = self.headers.get("Content-type")
             data = self.rfile.read(content_length)
-            message = simplejson.loads(data)
+            message = json.loads(data.decode('utf-8'))
             if content_type != 'application/json':
                 self.send_response(400)
                 self.end_headers()
@@ -32,7 +31,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 return_code = 501
                 return_message = {"errors": [{"error": "invalid_api_key"}]}
             self._set_headers(return_code)
-            self.wfile.write(simplejson.dumps(return_message).encode())
+            self.wfile.write(json.dumps(return_message).encode())
         except Exception as err:
             print(err)
             self.send_response(500)
@@ -76,7 +75,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             content_length = int(self.headers.get("Content-length"))
             content_type = self.headers.get("Content-type")
             data = self.rfile.read(content_length)
-            message = simplejson.loads(data)
+            message = json.loads(data.decode('utf-8'))
             if content_type != 'application/json':
                 self.send_response(400)
                 self.end_headers()
@@ -89,7 +88,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 return_code = 501
                 return_message = {"errors": [{"error": "invalid_api_key"}]}
             self._set_headers(return_code)
-            self.wfile.write(simplejson.dumps(return_message).encode())
+            self.wfile.write(json.dumps(return_message).encode())
         except Exception as err:
             print(err)
             self.send_response(500)
@@ -160,7 +159,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             return_message = {"invalid_api_key"}
         # send response
         self._set_headers(return_code)
-        self.wfile.write(simplejson.dumps(return_message).encode())
+        self.wfile.write(json.dumps(return_message).encode())
 
     def fetch_all(self):
         code = 200

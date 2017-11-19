@@ -5,7 +5,7 @@
 #!/bin/bash
 value=9000
 
-for number in {1..100}
+for number in {1..3}
 do
 temp=$(expr $value + $number)
 # echo $temp
