@@ -54,7 +54,7 @@ That is, at any given time, a single node might not have all the data
             that can be run via terminal)
               
            
-4) Makefile
+4) Makefile (Run and execution steps)
 
             To install all the dependencies
                -    Proxy by default runs on 8080 (hardcoded in the proxy application)
@@ -64,6 +64,9 @@ That is, at any given time, a single node might not have all the data
                -    make run ::  builds executes and runs everything (Testing for 3 servers on port 9001 9002 9003)
                -    make check :: cleans and runs the entire submission.
                -    We have individual scripts to start and stop servers and stop/start proxy
+               -    ./start_n_servers.sh : starts 3 servers on 9001 9002 and 9003
+               -    ./run_proxy.sh : starts proxy with information about these servers
+               -    Similarly to stop use, stop_servers.sh and stop_proxy.sh
 5) requirements.txt
             
             Stores all the python dependencies

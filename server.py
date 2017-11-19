@@ -56,8 +56,8 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             else:
                 correct_json = False
 
-        if not(kv["key"]["encoding"] in ("binary", "string") and
-               kv["value"]["encoding"] in ("binary", "string")):
+        if not (kv["key"]["encoding"] in ("binary", "string") and
+                        kv["value"]["encoding"] in ("binary", "string")):
             correct_json = False
         return correct_json
 
@@ -130,7 +130,7 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             if not self.check_binary(k["data"]):
                 correct_json = False
 
-        if not(k["encoding"] in ("binary", "string")):
+        if not (k["encoding"] in ("binary", "string")):
             correct_json = False
         return correct_json
 
@@ -141,17 +141,21 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
             for k in message:
                 if k["encoding"] in ("binary", "string"):
                     if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
-                        result = [{
+                        result.append({
                             "key": k,
                             "value": {}
-                        }]
+                        })
                     else:
                         result.append(
                             {"key": k,
                              "value": dict(self.server.kveachinstance.get_value(frozenset(k.items())))
                              })
                 else:
-                    result = [{None}]
+                    result.append({"key": k,
+                                   "value": {}})
+            for pairs in result:
+                if not pairs["value"]:
+                    code = 206
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
@@ -166,14 +170,17 @@ class CustomHandler(http.server.BaseHTTPRequestHandler):
                 correct_json = self.verify_dict_get(k)
                 if correct_json:
                     if self.server.kveachinstance.get_value(frozenset(k.items())) is None:
-                        result = [{
+                        result.append({
                             "key": k,
                             "value": False
-                        }]
+                        })
                     else:
                         result.append({"key": k, "value": True})
                 else:
-                    result = [{None}]
+                    result.append({})
+            for pairs in result:
+                if not pairs["value"]:
+                    code = 206
         except TypeError:
             return {"error": True, "message": "Bad request"}, 400
         except KeyError:
@@ -229,7 +236,7 @@ class DataInstance:
                 "key": dict(key),
                 "value": dict(self.data[key])
             } for key in self.data
-        ]
+            ]
         return var
 
     def set_value(self, key, value):
